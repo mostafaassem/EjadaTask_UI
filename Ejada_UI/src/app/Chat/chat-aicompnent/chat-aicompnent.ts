@@ -3,47 +3,56 @@ import { ChatToggle } from '../../chat-toggle';
 import { CommonModule } from '@angular/common';
 import { InvoiceApi } from '../../service/invoice-api';
 import { FormsModule } from '@angular/forms';
-import { response } from 'express';
+
 @Component({
   selector: 'app-chat-aicompnent',
-  imports: [CommonModule,FormsModule],
+  standalone: true,
+  imports: [CommonModule, FormsModule],
   templateUrl: './chat-aicompnent.html',
   styleUrl: './chat-aicompnent.css'
 })
-export class ChatAICompnent  {
-showChat = false;
-Message :string='';
-Request:any={
-  prompt:''
-}
-loading: boolean = false;
-Response:string='';
-constructor(private chatToggleService: ChatToggle,private invoiceApi: InvoiceApi) {}
+export class ChatAICompnent {
+  showChat = false;
+  Message: string = '';
+  loading: boolean = false;
 
-ngOnInit() {
+  // Chat history: each item { sender: 'user' | 'ai', text: string }
+  chatHistory: { sender: string; text: string }[] = [];
+
+  constructor(private chatToggleService: ChatToggle, private invoiceApi: InvoiceApi) {}
+
+  ngOnInit() {
     this.chatToggleService.showChat$.subscribe((visible) => {
       this.showChat = visible;
     });
   }
 
-  SendChat()
-  {
+  SendChat() {
+    if (!this.Message.trim()) return;
 
-    this.loading = true;         
-    this.Response = ''; 
-    this.Request.prompt=this.Message;
-    this.Message='';
-    this.invoiceApi.SendChat(this.Request).subscribe(
-    {
-        next: (res: any) => {
-          this.Response = res;
-          this.loading=false;
-           console.log('رد السيرفر:', res);
-        },
-        
+    const userMessage = this.Message;
+    this.chatHistory.push({ sender: 'user', text: userMessage });
+
+    this.loading = true;
+    this.Message = '';
+
+    this.invoiceApi.SendChat({ prompt: userMessage }).subscribe({
+      next: (res: any) => {
+        this.chatHistory.push({ sender: 'ai', text: res });
+        this.loading = false;
+        console.log('رد السيرفر:', res);
+      },
+      error: () => {
+        this.chatHistory.push({ sender: 'ai', text: 'حدث خطأ في السيرفر. حاول مرة أخرى.' });
+        this.loading = false;
       }
-    )
+    });
   }
 
-
+  onKeydown(event: KeyboardEvent) {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      this.SendChat();
+    }
+  }
 }

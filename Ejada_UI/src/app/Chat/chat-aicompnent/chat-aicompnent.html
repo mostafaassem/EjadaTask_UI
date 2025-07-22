@@ -1,18 +1,35 @@
-<div class="card">
-<div *ngIf="showChat; else placeholder" class="text-center" style="width: 30%; ">
-    
-    
-<div *ngIf="loading" class="spinner-border" role="status">
-  <span class="visually-hidden">Loading...</span>
-</div>
-<p *ngIf="Response && !loading">Response: {{ Response }}</p>
-    
-    <div >
-        <input type="text" id="UserMessage" [(ngModel)]="Message" style="width: 80%;" placeholder="Type Your Question To Make AI Help You"/>
-        <button (click)="SendChat()"  style="margin-left: 3px;" class="btn btn-primary">Send</button>
+<div class="chat-widget" *ngIf="showChat">
+  <div class="chat-header">
+    AI Assistant
+    <button class="btn-close" (click)="showChat = false">×</button>
+  </div>
+
+  <div class="chat-body">
+    <div *ngFor="let message of chatHistory">
+      <div
+        class="chat-bubble"
+        [class.user]="message.sender === 'user'"
+        [class.ai]="message.sender === 'ai'"
+      >
+        {{ message.text }}
+      </div>
     </div>
+
+    <div *ngIf="loading" class="spinner-border mt-2" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+
+  <div class="chat-input">
+    <textarea
+      [(ngModel)]="Message"
+      (keydown)="onKeydown($event)"
+      placeholder="Type a message and press Enter..."
+      rows="2"
+    ></textarea>
+    <button (click)="SendChat()" class="btn btn-primary">Send</button>
+  </div>
 </div>
-<ng-template #placeholder>
-    <div style="min-height:100px"></div>
-</ng-template>
-</div>
+
+<!-- Floating Button -->
+<button class="floating-button" *ngIf="!showChat" (click)="showChat = true">💬</button>
