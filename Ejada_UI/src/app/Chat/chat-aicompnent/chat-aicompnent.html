@@ -1,0 +1,18 @@
+<div class="card">
+<div *ngIf="showChat; else placeholder" class="text-center" style="width: 30%; ">
+    
+    
+<div *ngIf="loading" class="spinner-border" role="status">
+  <span class="visually-hidden">Loading...</span>
+</div>
+<p *ngIf="Response && !loading">Response: {{ Response }}</p>
+    
+    <div >
+        <input type="text" id="UserMessage" [(ngModel)]="Message" style="width: 80%;" placeholder="Type Your Question To Make AI Help You"/>
+        <button (click)="SendChat()"  style="margin-left: 3px;" class="btn btn-primary">Send</button>
+    </div>
+</div>
+<ng-template #placeholder>
+    <div style="min-height:100px"></div>
+</ng-template>
+</div>
